@@ -1,0 +1,5 @@
+*.cbp
+TP2
+.idea
+./Makefile
+*.txt

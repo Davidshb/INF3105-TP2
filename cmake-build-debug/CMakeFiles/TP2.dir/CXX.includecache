@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/arbreavl.h
+utility
+-
+cassert
+-
+pile.h
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/pile.h
+vector
+-
+
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/main.cpp
+iostream
+-
+fstream
+-
+arbreavl.h
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/arbreavl.h
+
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/pile.h
+assert.h
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/assert.h
+pile.h
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/pile.h
+
