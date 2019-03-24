@@ -2,7 +2,7 @@
 
 /* UQAM / Département d'informatique
    INF3105 - Structures de données et algorithmes
-   Squelette pour classe générique ArbreAVL<T> pour le Lab6 et le TP2.
+   Squelette pour classe générique ArbreAVL<K> pour le Lab6 et le TP2.
 
    AUTEUR(S):
     1) Nom + Code permanent du l'étudiant.e 1
@@ -14,9 +14,8 @@
 
 #include <cassert>
 #include "pile.h"
-#include <vector>
 
-template<class T>
+template<class K, class V>
 class ArbreAVL {
 public:
     ArbreAVL();
@@ -28,15 +27,15 @@ public:
     // Annonce l'existance d'une classe Iterateur.
     class Iterateur;
 
-    void inserer(const T &, const std::vector<T> &);
+    void inserer(const K &, const V &);
 
-    bool contient(const T &) const;
+    bool contient(const K &) const;
 
     bool vide() const;
 
     void vider();
 
-    void enlever(const T &); // non requis pour le TP2.
+    void enlever(const K &); // non requis pour le TP2.
 
     int hauteur() const;
 
@@ -45,34 +44,40 @@ public:
 
     Iterateur fin() const;
 
-    Iterateur rechercher(const T &) const;
+    Iterateur rechercher(const K &) const;
 
-    Iterateur rechercherEgalOuSuivant(const T &) const;
+    Iterateur rechercherEgalOuSuivant(const K &) const;
 
-    Iterateur rechercherEgalOuPrecedent(const T &) const;
+    Iterateur rechercherEgalOuPrecedent(const K &) const;
 
     // Accès aux éléments de l'arbre via un intérateur.
-    const T &operator[](const Iterateur &) const;
+    const V &operator[](const Iterateur &) const;
 
-    T &operator[](const Iterateur &);
+    V &operator[](const Iterateur &);
+
+    const V &operator[](const K &) const;
+
+    V &operator[](const K &);
 
     // Copie d'un arbre AVL.
     ArbreAVL &operator=(const ArbreAVL &);
 
+    bool contient(const K &, const K &);
+
 private:
     struct Noeud {
-        explicit Noeud(const T &, const std::vector<T> &);
+        explicit Noeud(const K &, const V & = nullptr);
 
-        T contenu;
-        std::vector<T> value;
-        int equilibre;
+        K cle;
+        V valeur;
         Noeud *gauche, *droite;
+        int equilibre;
     };
 
     Noeud *racine;
 
     // Fonctions internes
-    bool inserer(Noeud *&, const T &, const std::vector<T> &);
+    bool inserer(Noeud *&, const K &, const V &);
 
     void rotationGaucheDroite(Noeud *&);
 
@@ -82,9 +87,7 @@ private:
 
     void copier(const Noeud *, Noeud *&) const;
 
-    const T &max(Noeud *) const;
-
-    bool enlever(Noeud *&, const T &e);
+    const K &max(Noeud *) const;
 
     int hauteur(Noeud *) const;
 
@@ -92,11 +95,9 @@ public:
     // Sera présenté à la semaine #7
     class Iterateur {
     public:
-        Iterateur(const ArbreAVL &a);
+        explicit Iterateur(const ArbreAVL &a);
 
         Iterateur(const Iterateur &a);
-
-        Iterateur(const ArbreAVL &a, Noeud *c);
 
         operator bool() const;
 
@@ -106,11 +107,9 @@ public:
 
         bool operator!=(const Iterateur &) const;
 
-        const T &operator*() const;
-
         Iterateur &operator++();
 
-        Iterateur operator++(int);
+        const Iterateur operator++(int);
 
         Iterateur &operator=(const Iterateur &);
 
@@ -126,57 +125,57 @@ public:
 
 //-----------------------------------------------------------------------------
 
-template<class T>
-ArbreAVL<T>::Noeud::Noeud(const T &c, const std::vector<T> &l)
-        : contenu(c), equilibre(0), gauche(NULL), droite(NULL), value(l) {
+template<class K, class V>
+ArbreAVL<K, V>::Noeud::Noeud(const K &c, const V &l)
+        : cle(c), valeur(l), equilibre(0), gauche(NULL), droite(NULL) {
 }
 
-template<class T>
-ArbreAVL<T>::ArbreAVL()
+template<class K, class V>
+ArbreAVL<K, V>::ArbreAVL()
         : racine(NULL) {
 }
 
-template<class T>
-ArbreAVL<T>::ArbreAVL(const ArbreAVL<T> &autre)
+template<class K, class V>
+ArbreAVL<K, V>::ArbreAVL(const ArbreAVL<K, V> &autre)
         : racine(NULL) {
     copier(autre.racine, racine);
 }
 
-template<class T>
-ArbreAVL<T>::~ArbreAVL() {
+template<class K, class V>
+ArbreAVL<K, V>::~ArbreAVL() {
     vider(racine);
 }
 
-template<class T>
-bool ArbreAVL<T>::contient(const T &element) const {
+template<class K, class V>
+bool ArbreAVL<K, V>::contient(const K &cle) const {
     Noeud *tmp = racine;
 
     while (tmp) {
-        if (tmp->contenu == element)
+        if (tmp->cle == cle)
             return true;
 
-        if (element < tmp->contenu)
+        if (cle < tmp->cle)
             tmp = tmp->gauche;
-        else if (element > tmp->contenu)
+        else if (cle > tmp->cle)
             tmp = tmp->droite;
     }
 
     return false;
 }
 
-template<class T>
-void ArbreAVL<T>::inserer(const T &element, const std::vector<T> &value) {
-    inserer(racine, element, value);
+template<class K, class V>
+void ArbreAVL<K, V>::inserer(const K &cle, const V &valeur) {
+    inserer(racine, cle, valeur);
 }
 
-template<class T>
-bool ArbreAVL<T>::inserer(Noeud *&noeud, const T &element, const std::vector<T> &value) {
+template<class K, class V>
+bool ArbreAVL<K, V>::inserer(Noeud *&noeud, const K &cle, const V &valeur) {
     if (noeud == NULL) {
-        noeud = new Noeud(element, value);
+        noeud = new Noeud(cle, valeur);
         return true;
     }
-    if (element < noeud->contenu) {
-        if (inserer(noeud->gauche, element, value)) {
+    if (cle < noeud->cle) {
+        if (inserer(noeud->gauche, cle, valeur)) {
             noeud->equilibre++;
             if (noeud->equilibre == 0)
                 return false;
@@ -189,8 +188,8 @@ bool ArbreAVL<T>::inserer(Noeud *&noeud, const T &element, const std::vector<T> 
         }
         return false;
     }
-    if (noeud->contenu < element) {
-        if (inserer(noeud->droite, element, value)) {
+    if (noeud->cle < cle) {
+        if (inserer(noeud->droite, cle, valeur)) {
             noeud->equilibre--;
             if (noeud->equilibre == 0)
                 return false;
@@ -203,13 +202,13 @@ bool ArbreAVL<T>::inserer(Noeud *&noeud, const T &element, const std::vector<T> 
         }
         return false;
     }
-    // element == noeud->contenu
-    noeud->contenu = element;  // Mise à jour
+    // cle == noeud->cle
+    //noeud->cle = cle;  // Mise à jour
     return false;
 }
 
-template<class T>
-void ArbreAVL<T>::rotationGaucheDroite(Noeud *&racinesousarbre) {
+template<class K, class V>
+void ArbreAVL<K, V>::rotationGaucheDroite(Noeud *&racinesousarbre) {
     Noeud *temp = racinesousarbre->gauche;
     int ea = temp->equilibre;
     int eb = racinesousarbre->equilibre;
@@ -223,8 +222,8 @@ void ArbreAVL<T>::rotationGaucheDroite(Noeud *&racinesousarbre) {
     racinesousarbre = temp;
 }
 
-template<class T>
-void ArbreAVL<T>::rotationDroiteGauche(Noeud *&racinesousarbre) {
+template<class K, class V>
+void ArbreAVL<K, V>::rotationDroiteGauche(Noeud *&racinesousarbre) {
     // À compléter.
     Noeud *tmp = racinesousarbre->droite;
     int ea = racinesousarbre->equilibre;
@@ -239,19 +238,19 @@ void ArbreAVL<T>::rotationDroiteGauche(Noeud *&racinesousarbre) {
     racinesousarbre = tmp;
 }
 
-template<class T>
-bool ArbreAVL<T>::vide() const {
+template<class K, class V>
+bool ArbreAVL<K, V>::vide() const {
     // À compléter.
     return racine == NULL;
 }
 
-template<class T>
-void ArbreAVL<T>::vider() {
+template<class K, class V>
+void ArbreAVL<K, V>::vider() {
     vider(racine);
 }
 
-template<class T>
-void ArbreAVL<T>::vider(Noeud *&noeud) {
+template<class K, class V>
+void ArbreAVL<K, V>::vider(Noeud *&noeud) {
     if (noeud != NULL) {
         vider(noeud->droite);
         vider(noeud->gauche);
@@ -260,10 +259,10 @@ void ArbreAVL<T>::vider(Noeud *&noeud) {
     // À compléter.
 }
 
-template<class T>
-void ArbreAVL<T>::copier(const Noeud *source, Noeud *&noeud) const {
+template<class K, class V>
+void ArbreAVL<K, V>::copier(const Noeud *source, Noeud *&noeud) const {
     if (source != NULL) {
-        noeud = new Noeud(source->contenu, source->value);
+        noeud = new Noeud(source->cle, source->valeur);
         noeud->equilibre = source->equilibre;
         copier(source->gauche, noeud->gauche);
         copier(source->droite, noeud->droite);
@@ -271,8 +270,8 @@ void ArbreAVL<T>::copier(const Noeud *source, Noeud *&noeud) const {
 }
 
 
-template<class T>
-int ArbreAVL<T>::hauteur(Noeud *n) const {
+template<class K, class V>
+int ArbreAVL<K, V>::hauteur(Noeud *n) const {
     if (n == NULL)
         return 0;
 
@@ -281,71 +280,29 @@ int ArbreAVL<T>::hauteur(Noeud *n) const {
     return 1 + (a < b ? b : a);
 }
 
-template<class T>
-int ArbreAVL<T>::hauteur() const {
+template<class K, class V>
+int ArbreAVL<K, V>::hauteur() const {
     return hauteur(racine);
 }
 
-template<class T>
-const T &ArbreAVL<T>::max(Noeud *n) const {
-    if(n == NULL)
+template<class K, class V>
+const K &ArbreAVL<K, V>::max(Noeud *n) const {
+    if (n == NULL)
         return NULL;
-    while(n->droite != NULL)
+    while (n->droite != NULL)
         n = n->droite;
 
-    return n->contenu;
+    return n->cle;
 }
 
-// L'enlèvement est optionnel (non requise pour le TP2)
-template<class T>
-void ArbreAVL<T>::enlever(const T &element) {
+// L'enlèvement est optionnel (non requise pour le KP2)
+template<class K, class V>
+void ArbreAVL<K, V>::enlever(const K &element) {
     enlever(racine, element);
 }
 
-template<class T>
-bool ArbreAVL<T>::enlever(Noeud *&noeud, const T &element) {
-    if (element < noeud->contenu) {
-        if (enlever(noeud->gauche, element)) {
-            noeud->equilibre--;
-            if (noeud->equilibre == 0) return false;
-            if (noeud->equilibre == -1) return true;
-            assert(noeud->equilibre == -2);
-            if (noeud->droite->equilibre == 1)
-                rotationGaucheDroite(noeud->droite);
-            rotationDroiteGauche(noeud);
-        }
-        return false;
-    } else if (element > noeud->contenu) {
-        if (enlever(noeud->droite, element)) {
-            noeud->equilibre++;
-            if (noeud->equilibre == 0) return false;
-            if (noeud->equilibre == 1) return true;
-            assert(noeud->equilibre == 2);
-            if (noeud->gauche->equilibre == -1)
-                rotationDroiteGauche(noeud->gauche);
-            rotationGaucheDroite(noeud);
-        }
-        return false;
-    } else if (element == noeud->contenu) {
-        if (noeud->gauche == NULL && noeud->droite == NULL) {
-            delete noeud;
-            noeud = NULL;
-            return true;
-        } else {
-
-            return true;
-        }
-    }
-    return false;
-
-}
-
-
-
-//----------- L'enlèvement est optionnel (non requise pour le TP2) ----------//
-
-template<class T>
-typename ArbreAVL<T>::Iterateur ArbreAVL<T>::debut() const {
+template<class K, class V>
+typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::debut() const {
     Iterateur iter(*this);
     iter.courant = racine;
     if (iter.courant != NULL)
@@ -353,23 +310,24 @@ typename ArbreAVL<T>::Iterateur ArbreAVL<T>::debut() const {
             iter.chemin.empiler(iter.courant);
             iter.courant = iter.courant->gauche;
         }
+
     return iter;
 }
 
-template<class T>
-typename ArbreAVL<T>::Iterateur ArbreAVL<T>::fin() const {
+template<class K, class V>
+typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::fin() const {
     return Iterateur(*this);
 }
 
-template<class T>
-typename ArbreAVL<T>::Iterateur ArbreAVL<T>::rechercher(const T &e) const {
+template<class K, class V>
+typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::rechercher(const K &e) const {
     Iterateur iter(*this);
     Noeud *tmp = racine;
     while (tmp) {
-        if (e < tmp->contenu) {
+        if (e < tmp->cle) {
             iter.chemin.empiler(tmp);
             tmp = tmp->gauche;
-        } else if (tmp->contenu < e)
+        } else if (tmp->cle < e)
             tmp = tmp->droite;
         else {
             iter.courant = tmp;
@@ -380,24 +338,27 @@ typename ArbreAVL<T>::Iterateur ArbreAVL<T>::rechercher(const T &e) const {
     return iter;
 }
 
-template<class T>
-typename ArbreAVL<T>::Iterateur ArbreAVL<T>::rechercherEgalOuSuivant(const T &e) const {
-    Iterateur iter(*this);
-    iter.courant = this->racine;
-    Noeud *tmp = nullptr;
+template<class K, class V>
+typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::rechercherEgalOuSuivant(const K &e) const {
+    Noeud *tmp = racine, *dernier = nullptr;
 
-    while (iter && iter.courant->contenu != e) {
-        if (e > iter.courant->contenu) {
-            iter.chemin.empiler(iter.courant);
-            iter.courant = iter.courant->gauche;
-        }
+    while (tmp) {
+        if (e < tmp->cle)
+            tmp = tmp->gauce;
+        else if (tmp->cle < e) {
+            dernier = e;
+            tmp = tmp->droite;
+        } else
+            return rechercher(e);
     }
     // À compléter.
-    return iter;
+    if (dernier != nullptr)
+        return rechercher(dernier->cle);
+    return Iterateur(*this);
 }
 
-template<class T>
-typename ArbreAVL<T>::Iterateur ArbreAVL<T>::rechercherEgalOuPrecedent(const T &e) const {
+template<class K, class V>
+typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::rechercherEgalOuPrecedent(const K &e) const {
     // À compléter.
     Iterateur it(*this);
     it.courant = this->racine;
@@ -411,96 +372,120 @@ typename ArbreAVL<T>::Iterateur ArbreAVL<T>::rechercherEgalOuPrecedent(const T &
     return it;
 }
 
-template<class T>
-const T &ArbreAVL<T>::operator[](const Iterateur &iterateur) const {
+template<class K, class V>
+const V &ArbreAVL<K, V>::operator[](const Iterateur &iterateur) const {
     assert(&iterateur.arbre_associe == this);
     assert(iterateur.courant);
-    return iterateur.courant->contenu;
+    return iterateur.courant->valeur;
 }
 
-template<class T>
-T &ArbreAVL<T>::operator[](const Iterateur &iterateur) {
+template<class K, class V>
+V &ArbreAVL<K, V>::operator[](const Iterateur &iterateur) {
     assert(&iterateur.arbre_associe == this);
     assert(iterateur.courant);
-    return iterateur.courant->contenu;
+    return iterateur.courant->valeur;
 }
 
-template<class T>
-ArbreAVL<T> &ArbreAVL<T>::operator=(const ArbreAVL &autre) {
+template<class K, class V>
+ArbreAVL<K, V> &ArbreAVL<K, V>::operator=(const ArbreAVL &autre) {
     if (this == &autre) return *this;
     vider();
     copier(autre.racine, racine);
     return *this;
 }
 
+template<class K, class V>
+const V &ArbreAVL<K, V>::operator[](const K &c) const {
+    typename ArbreAVL<K, V>::Iterateur iter = rechercher(c);
+    return this[iter];
+}
+
+template<class K, class V>
+V &ArbreAVL<K, V>::operator[](const K &c) {
+    typename ArbreAVL<K, V>::Iterateur iter = rechercher(c);
+    if (!iter) {
+        inserer(c);
+        iter = rechercher(c);
+    }
+    return this[iter];
+}
+
+template<class K, class V>
+bool ArbreAVL<K, V>::contient(const K &c, const K &v) {
+    bool res = false;
+    Iterateur iter = rechercher(c);
+    if (iter == fin())
+        return res;
+    V &tmp = iter.courant->valeur;
+    for (const auto &w : tmp)
+        if (w == v) {
+            res = true;
+            break;
+        }
+    return res;
+}
+
 //-----------------------
-template<class T>
-ArbreAVL<T>::Iterateur::Iterateur(const ArbreAVL &a)
+template<class K, class V>
+ArbreAVL<K, V>::Iterateur::Iterateur(const ArbreAVL &a)
         : arbre_associe(a), courant(NULL) {
 }
 
-template<class T>
-ArbreAVL<T>::Iterateur::Iterateur(const ArbreAVL<T>::Iterateur &a)
+template<class K, class V>
+ArbreAVL<K, V>::Iterateur::Iterateur(const ArbreAVL<K, V>::Iterateur &a)
         : arbre_associe(a.arbre_associe) {
     courant = a.courant;
     chemin = a.chemin;
 }
 
 // Pré-incrément
-template<class T>
-typename ArbreAVL<T>::Iterateur &ArbreAVL<T>::Iterateur::operator++() {
+template<class K, class V>
+typename ArbreAVL<K, V>::Iterateur &ArbreAVL<K, V>::Iterateur::operator++() {
     // À compléter.
-    if (!*this)
-        return *this;
+    assert(courant);
 
-    courant = courant->droite;
-    while (*this) {
-        chemin.empiler(courant);
-        courant = courant->gauche;
+    Noeud *suivant = courant->droite;
+    while (suivant) {
+        chemin.empiler(suivant);
+        suivant = suivant->gauche;
     }
-    if (!chemin.vide())
-        courant = chemin.depiler();
+
+    courant = chemin.vide() ? NULL : chemin.depiler();
     return *this;
 }
 
 // Post-incrément
-template<class T>
-typename ArbreAVL<T>::Iterateur ArbreAVL<T>::Iterateur::operator++(int) {
+template<class K, class V>
+const typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::Iterateur::operator++(int) {
     Iterateur copie(*this);
     operator++();
     return copie;
 }
 
-template<class T>
-ArbreAVL<T>::Iterateur::operator bool() const {
+template<class K, class V>
+ArbreAVL<K, V>::Iterateur::operator bool() const {
     return courant != NULL;
 }
 
-template<class T>
-bool ArbreAVL<T>::Iterateur::operator!() const {
+template<class K, class V>
+bool ArbreAVL<K, V>::Iterateur::operator!() const {
     return courant == NULL;
 }
 
-template<class T>
-bool ArbreAVL<T>::Iterateur::operator==(const Iterateur &o) const {
+template<class K, class V>
+bool ArbreAVL<K, V>::Iterateur::operator==(const Iterateur &o) const {
     assert(&arbre_associe == &o.arbre_associe);
     return courant == o.courant;
 }
 
-template<class T>
-bool ArbreAVL<T>::Iterateur::operator!=(const Iterateur &o) const {
+template<class K, class V>
+bool ArbreAVL<K, V>::Iterateur::operator!=(const Iterateur &o) const {
     assert(&arbre_associe == &o.arbre_associe);
     return courant != o.courant;
 }
 
-template<class T>
-const T &ArbreAVL<T>::Iterateur::operator*() const {
-    assert(courant != NULL);
-    return courant->contenu;
-}
-
-template<class T>
-typename ArbreAVL<T>::Iterateur &ArbreAVL<T>::Iterateur::operator=(const Iterateur &autre) {
+template<class K, class V>
+typename ArbreAVL<K, V>::Iterateur &ArbreAVL<K, V>::Iterateur::operator=(const Iterateur &autre) {
     assert(&arbre_associe == &autre.arbre_associe);
     courant = autre.courant;
     chemin = autre.chemin;

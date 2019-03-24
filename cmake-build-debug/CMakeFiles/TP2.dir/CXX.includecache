@@ -13,6 +13,10 @@ cassert
 -
 pile.h
 /Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/pile.h
+
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/arbres.h
+string
+-
 vector
 -
 
@@ -21,8 +25,14 @@ iostream
 -
 fstream
 -
+vector
+-
+string
+-
 arbreavl.h
 /Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/arbreavl.h
+arbres.h
+/Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/arbres.h
 
 /Users/david/OneDrive - UQAM/HIVER 2019/INF3105/TP2/pile.h
 assert.h
