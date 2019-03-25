@@ -3,3 +3,4 @@ TP2
 .idea
 ./Makefile
 *.txt
+cmake-build-debug

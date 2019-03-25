@@ -15,6 +15,13 @@
 #include <cassert>
 #include "pile.h"
 
+inline bool is_number(const std::string& s)
+{
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
 template<class K, class V>
 class ArbreAVL {
 public:
@@ -29,15 +36,13 @@ public:
 
     void inserer(const K &, const V &);
 
-    bool contient(const K &) const;
+    bool contient(const K &, std::vector<V> &) const;
 
-    bool vide() const;
+    bool contient(const K &) const;
 
     void vider();
 
-    void enlever(const K &); // non requis pour le TP2.
-
-    int hauteur() const;
+    const int est_foncteur(const Iterateur &) const;
 
     // Fonctions pour obtenir un itérateur (position dans l'arbre)    
     Iterateur debut() const;
@@ -45,10 +50,6 @@ public:
     Iterateur fin() const;
 
     Iterateur rechercher(const K &) const;
-
-    Iterateur rechercherEgalOuSuivant(const K &) const;
-
-    Iterateur rechercherEgalOuPrecedent(const K &) const;
 
     // Accès aux éléments de l'arbre via un intérateur.
     const V &operator[](const Iterateur &) const;
@@ -61,8 +62,6 @@ public:
 
     // Copie d'un arbre AVL.
     ArbreAVL &operator=(const ArbreAVL &);
-
-    bool contient(const K &, const K &);
 
 private:
     struct Noeud {
@@ -87,10 +86,6 @@ private:
 
     void copier(const Noeud *, Noeud *&) const;
 
-    const K &max(Noeud *) const;
-
-    int hauteur(Noeud *) const;
-
 public:
     // Sera présenté à la semaine #7
     class Iterateur {
@@ -99,7 +94,7 @@ public:
 
         Iterateur(const Iterateur &a);
 
-        operator bool() const;
+        explicit operator bool() const;
 
         bool operator!() const;
 
@@ -127,7 +122,7 @@ public:
 
 template<class K, class V>
 ArbreAVL<K, V>::Noeud::Noeud(const K &c, const V &l)
-        : cle(c), valeur(l), equilibre(0), gauche(NULL), droite(NULL) {
+        : cle(c), valeur(l), gauche(NULL), droite(NULL), equilibre(0) {
 }
 
 template<class K, class V>
@@ -147,12 +142,14 @@ ArbreAVL<K, V>::~ArbreAVL() {
 }
 
 template<class K, class V>
-bool ArbreAVL<K, V>::contient(const K &cle) const {
+bool ArbreAVL<K, V>::contient(const K &cle, std::vector<V> &t) const {
     Noeud *tmp = racine;
 
     while (tmp) {
-        if (tmp->cle == cle)
+        if (tmp->cle == cle && !is_number(tmp->valeur[0])) {
+            t.push_back(tmp->valeur);
             return true;
+        }
 
         if (cle < tmp->cle)
             tmp = tmp->gauche;
@@ -239,12 +236,6 @@ void ArbreAVL<K, V>::rotationDroiteGauche(Noeud *&racinesousarbre) {
 }
 
 template<class K, class V>
-bool ArbreAVL<K, V>::vide() const {
-    // À compléter.
-    return racine == NULL;
-}
-
-template<class K, class V>
 void ArbreAVL<K, V>::vider() {
     vider(racine);
 }
@@ -267,38 +258,6 @@ void ArbreAVL<K, V>::copier(const Noeud *source, Noeud *&noeud) const {
         copier(source->gauche, noeud->gauche);
         copier(source->droite, noeud->droite);
     }
-}
-
-
-template<class K, class V>
-int ArbreAVL<K, V>::hauteur(Noeud *n) const {
-    if (n == NULL)
-        return 0;
-
-    int a = hauteur(n->gauche), b = hauteur(n->droite);
-
-    return 1 + (a < b ? b : a);
-}
-
-template<class K, class V>
-int ArbreAVL<K, V>::hauteur() const {
-    return hauteur(racine);
-}
-
-template<class K, class V>
-const K &ArbreAVL<K, V>::max(Noeud *n) const {
-    if (n == NULL)
-        return NULL;
-    while (n->droite != NULL)
-        n = n->droite;
-
-    return n->cle;
-}
-
-// L'enlèvement est optionnel (non requise pour le KP2)
-template<class K, class V>
-void ArbreAVL<K, V>::enlever(const K &element) {
-    enlever(racine, element);
 }
 
 template<class K, class V>
@@ -336,40 +295,6 @@ typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::rechercher(const K &e) const 
     }
     iter.chemin.vider();
     return iter;
-}
-
-template<class K, class V>
-typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::rechercherEgalOuSuivant(const K &e) const {
-    Noeud *tmp = racine, *dernier = nullptr;
-
-    while (tmp) {
-        if (e < tmp->cle)
-            tmp = tmp->gauce;
-        else if (tmp->cle < e) {
-            dernier = e;
-            tmp = tmp->droite;
-        } else
-            return rechercher(e);
-    }
-    // À compléter.
-    if (dernier != nullptr)
-        return rechercher(dernier->cle);
-    return Iterateur(*this);
-}
-
-template<class K, class V>
-typename ArbreAVL<K, V>::Iterateur ArbreAVL<K, V>::rechercherEgalOuPrecedent(const K &e) const {
-    // À compléter.
-    Iterateur it(*this);
-    it.courant = this->racine;
-
-    while (it && it.courant->contenu != e) {
-        if (e < it.courant->contenu) {
-            it.chemin.empiler(it.courant);
-            it.courant = it.courant->droite;
-        }
-    }
-    return it;
 }
 
 template<class K, class V>
@@ -411,17 +336,30 @@ V &ArbreAVL<K, V>::operator[](const K &c) {
 }
 
 template<class K, class V>
-bool ArbreAVL<K, V>::contient(const K &c, const K &v) {
-    bool res = false;
-    Iterateur iter = rechercher(c);
-    if (iter == fin())
-        return res;
-    V &tmp = iter.courant->valeur;
-    for (const auto &w : tmp)
-        if (w == v) {
-            res = true;
-            break;
+bool ArbreAVL<K, V>::contient(const K & cle) const {
+    Noeud *tmp = racine;
+
+    while (tmp) {
+        if (tmp->cle == cle) {
+            return true;
         }
+
+        if (cle < tmp->cle)
+            tmp = tmp->gauche;
+        else if (cle > tmp->cle)
+            tmp = tmp->droite;
+    }
+
+    return false;
+}
+
+template<class K, class V>
+const int ArbreAVL<K, V>::est_foncteur(const ArbreAVL::Iterateur &iter) const {
+    int res = 0;
+    assert(&iter.arbre_associe == this);
+    assert(iter.courant);
+    if(is_number(iter.courant->valeur[0]))
+        res = std::stoi(iter.courant->valeur[0]);
     return res;
 }
 
