@@ -27,13 +27,14 @@ string getWord(string &cmd) {
     cmd.erase(0, it);
     return res;
 }
-
+/*
+ * DEBUG FUNCTION
 void inline afficher(vector<string> v) {
     for (const string &w : v)
         cout << w << " ";
     cout << endl;
 }
-
+*/
 void ligne_foncteur(vector<string> &foncteur, string &line, const vector<vector<string>> &types) {
     string word;
     int taille_base = static_cast<int>(foncteur.size());
@@ -51,7 +52,7 @@ void ligne_foncteur(vector<string> &foncteur, string &line, const vector<vector<
     while (!(word = getWord(line)).empty() & word != ")") {
         if (word == ",") {
             if (virgule) {
-                cerr << "2 virgules foncteur" << endl;
+                cerr << "Il  manque un argument au foncteur" << endl;
                 exit(-1);
             }
             virgule = true;
@@ -133,7 +134,7 @@ ArbreAVL<string, vector<string>> *construire_base_de_donnees(const char *name) {
             while ((word = getWord(line)) != "}" && !word.empty()) {
                 if (word == ",") {
                     if (virgule) {
-                        cerr << ", de trop" << endl;
+                        cerr << "une virgule de trop" << endl;
                         exit(-1);
                     }
                     virgule = true;
@@ -141,7 +142,7 @@ ArbreAVL<string, vector<string>> *construire_base_de_donnees(const char *name) {
                 }
 
                 if (!virgule) {
-                    cerr << "manque , " << endl;
+                    cerr << "il manque une virgule '" << identificateur << '\'' << endl;
                     exit(-1);
                 }
 
@@ -234,10 +235,6 @@ int main(int argc, char *argv[]) {
     string line;
     string word;
 
-    for (auto it = baseDeDonnees->debut(); it != baseDeDonnees->fin(); ++it)
-        for (const string &i : (*baseDeDonnees)[it])
-            cout << i << endl;
-
     while (cin && getline(cin, line)) {
         ltrim(line);
         if (line.empty())
@@ -247,14 +244,14 @@ int main(int argc, char *argv[]) {
         auto it = baseDeDonnees->rechercher(word);
         if (it == baseDeDonnees->fin()) {
             cerr << "identificateur n'est pas reconnu" << endl;
-            continue;
+            exit(-1);
         }
 
         ltrim(line);
 
         if (line.empty()) {
             cerr << "Il manque la commande" << endl;
-            continue;
+            exit(-1);
         }
 
         const vector<string> &list = (*baseDeDonnees)[it];
@@ -264,7 +261,7 @@ int main(int argc, char *argv[]) {
 
             if ((taille_argument = baseDeDonnees->est_foncteur(it))) {
                 for (int i = 1 + taille_argument; i < taille; i++) {
-                    if (i % taille_argument == 1)
+                    if (i % taille_argument == 1 || i == taille_argument + 1)
                         cout << '(';
                     cout << list[i];
                     if (i % taille_argument)
@@ -286,7 +283,7 @@ int main(int argc, char *argv[]) {
 
             if (!(taille_argument = baseDeDonnees->est_foncteur(it))) {
                 cerr << word << " n'est pas un foncteur" << endl;
-                continue;
+                exit(-1);
             }
 
             line.erase(0, 1);
@@ -318,14 +315,14 @@ int main(int argc, char *argv[]) {
 
             if (virgule || nb == -1) {
                 cerr << "erreur de syntaxe" << endl;
-                continue;
+                exit(-1);
             }
 
             auto vec = list;
 
             if (tmp.size() != taille_argument) {
                 cerr << "mauvaise arité pour le foncteur" << endl;
-                continue;
+                exit(-1);
             }
 
             for (int i = taille_argument + 1, j = 0; i < taille; i++, j = j == taille_argument - 1 ? 0 : j + 1) {

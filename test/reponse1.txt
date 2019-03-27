@@ -1,0 +1,5 @@
+{baaaaa, caaaaa}
+{eaaaaa, faaaaa, gaaaaa}
+{iaaaaa, jaaaaa, abaaaa, bbaaaa}
+{dbaaaa, ebaaaa, fbaaaa, gbaaaa, hbaaaa, ibaaaa, jbaaaa, acaaaa}
+{ccaaaa, dcaaaa, ecaaaa, fcaaaa, gcaaaa, hcaaaa, icaaaa, jcaaaa, adaaaa, bdaaaa, cdaaaa, ddaaaa}
